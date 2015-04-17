@@ -12,7 +12,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * Created by gvamos on 4/15/15.
  */
-public class ScreenManager implements Runnable {
+public class ScreenManager extends CommandManager {
 
     static class Poster implements Runnable {
 
@@ -48,7 +48,6 @@ public class ScreenManager implements Runnable {
 
     }
 
-    BlockingQueue<ManagedCommand> commands;
     Activity activity;
     TextView textViewStatus;
     TextView textViewResult;
@@ -57,7 +56,6 @@ public class ScreenManager implements Runnable {
     public ScreenManager(Activity activity){
 
         this.activity = activity;
-        commands = new LinkedBlockingQueue<ManagedCommand>();
     }
 
     public void config(){
@@ -65,42 +63,23 @@ public class ScreenManager implements Runnable {
         textViewResult = (TextView)activity.findViewById(R.id.view_results);
         editTextCommand = (EditText)activity.findViewById(R.id.edit_command);
 
-
         //textViewStatus.setText("view init");
-        request("ScreenManager config called");
+        requestDisplay("ScreenManager init called");
+        init();
     }
 
-    public void request(String message){
+    public void requestDisplay(String message){
         ScreenCommand command = new ScreenCommand(activity, R.id.view_results,message);
-        commands.add(command);
-
+        request(command);
     }
 
-    public void execute() throws InterruptedException {
-        ManagedCommand cmd = commands.take();
-        cmd.exec();
+    public void requestStatus(String message){
+        ScreenCommand command = new ScreenCommand(activity, R.id.view_status,message);
+        request(command);
     }
 
-    @Override
-    public void run() {
-
-        while(true){
-            try {
-                execute();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
+    public void requestCommand(String message){
+        ScreenCommand command = new ScreenCommand(activity, R.id.edit_command,message);
+        request(command);
     }
-
-//    public void postStatus(String status){
-//        tv.post(new Runnable() {
-//            public void run() {
-//                //TextView tv = (TextView)findViewById(R.id.view_results);
-//                //tv.setText(curCount + "% Complete!");
-//                textViewResult.setText(curCount + "% Complete!");
-//            }
-//        });
-//    }
 }

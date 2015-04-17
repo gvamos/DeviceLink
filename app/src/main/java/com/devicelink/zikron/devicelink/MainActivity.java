@@ -1,7 +1,5 @@
 package com.devicelink.zikron.devicelink;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.SystemClock;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -55,98 +53,57 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
+    ScreenManager screenManager;
+
     @Override
     public void onStart(){
         super.onStart();
-        init();
-    }
 
-    TextView textViewStatus;
-    TextView textViewResult;
-    EditText editTextCommand;
-
-    Button buttonTest1;
-    Button buttonTest2;
-    Button buttonTest3;
-    Button buttonTest4;
-    void init(){
-
-        textViewStatus = (TextView)findViewById(R.id.view_status);
-        textViewResult = (TextView)findViewById(R.id.view_results);
-        editTextCommand = (EditText)findViewById(R.id.edit_command);
-
-        buttonTest1 = (Button)findViewById(R.id.btn_test1);
-        buttonTest2 = (Button)findViewById(R.id.btn_test2);
-        buttonTest3 = (Button)findViewById(R.id.btn_test3);
-        buttonTest4 = (Button)findViewById(R.id.btn_test4);
-
-        textViewStatus.setText("view init");
-
-    }
-
-
-    static class Poster implements Runnable {
-
-        TextView tv;
-        String text;
-
-        Poster(TextView textView, String text){
-            tv = textView;
-            this.text = text;
-        }
-
-        @Override
-        public void run() {
-            tv.setText(text);
-        }
+        screenManager = new ScreenManager(this);
+        screenManager.config();
     }
 
     static class Ticker implements Runnable {
 
-        int fieldCode;
-        TextView tv;
-        Activity activity;
+        Thread tickerThread;
         ScreenManager screenManager;
 
         Ticker(ScreenManager screenManager){
             this.screenManager = screenManager;
+            tickerThread = new Thread(this);
         }
+
+        public void init(){ tickerThread.start(); }
 
         @Override
         public void run() {
-
-            int i = 0;
-
-            while (i < 100) {
+            for(int i=0;i<100;i++){
                 SystemClock.sleep(250);
-                i++;
-
-                final int curCount = i;
-                if (curCount % 5 == 0) {
+                if (i % 5 == 0) {
                     // update UI with progress every 5%
-                     screenManager.request(curCount + "% Complete!");
-
+                    screenManager.requestDisplay(i + "% Complete!");
                 }
             }
-            screenManager.request("Count complete!");
+            screenManager.requestDisplay("i Count complete!!!");
         }
     }
 
-    ScreenManager screenManager = new ScreenManager(this);
-    Ticker ticker = new Ticker(screenManager);
+    public void onBtnLink(View v) {
+        screenManager.requestStatus("onBtnLink 0.1");
+        screenManager.requestCommand("default command");
+        screenManager.requestDisplay("Screen Manager Initialized 0.1");
+        Toast.makeText(getApplicationContext(), "onBtnLink", Toast.LENGTH_LONG).show();
+    }
 
     public void onBtnTest1Click(View v) {
-        screenManager.config();
-        Thread screenManagerThread = new Thread(screenManager);
-        screenManager.request("Screen Manager Request submitted");
-        screenManagerThread.start();
-        Thread tickerThread = new Thread(ticker);
-        tickerThread.start();
+        screenManager.requestStatus("onBtnTest1Click");
+        Ticker ticker = new Ticker(screenManager);
+        ticker.init();
         Toast.makeText(getApplicationContext(), "onBtnTest1Click", Toast.LENGTH_LONG).show();
     }
 
     public void onBtnTest2Click(View v) {
-        textViewStatus.setText("onBtnTest2Click");
+        screenManager.requestStatus("onBtnTest2Click");
         Toast.makeText(getApplicationContext(), "onBtnTest2Click", Toast.LENGTH_LONG).show();
     }
 }

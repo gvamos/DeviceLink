@@ -11,11 +11,17 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by gvamos on 4/13/15.
  */
-public class CommandManager {
+public class CommandManager implements Runnable {
 
     BlockingQueue<ManagedCommand> commands = new LinkedBlockingQueue<ManagedCommand>();
-    public void request(ManagedCommand command){
-        commands.add(command);
+    public void request(ManagedCommand command){ commands.add(command); }
+
+    Thread managerThread;
+
+    public Thread init(){
+        managerThread = new Thread(this);
+        managerThread.start();
+        return managerThread;
     }
 
     public void execute() throws InterruptedException {
@@ -24,4 +30,16 @@ public class CommandManager {
     }
 
     public int queueLength(){ return commands.size(); }
+
+    @Override
+    public void run() {
+
+        while(true){
+            try {
+                execute();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 }
